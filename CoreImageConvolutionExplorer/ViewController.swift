@@ -22,11 +22,12 @@ class ViewController: UIViewController
         view.addSubview(kernelDetailView)
         view.addSubview(convolutionImageViewer)
         
-        kernelsTableView.addTarget(self, action: #selector(ViewController.kernelSelectionChange),
-            forControlEvents: .ValueChanged)
+        kernelsTableView.addTarget(self,
+                                   action: #selector(ViewController.kernelSelectionChange),
+                                   for: .valueChanged)
     }
     
-    func kernelSelectionChange()
+    @objc func kernelSelectionChange()
     {
         kernelDetailView.weights = kernelsTableView.weights
         convolutionImageViewer.weights = kernelsTableView.weights

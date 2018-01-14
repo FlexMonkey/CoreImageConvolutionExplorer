@@ -14,10 +14,10 @@ class KernelsTableView: UIControl
     
     let tableView: UITableView =
     {
-        let tableView = UITableView(frame: CGRectZero,
-            style: UITableViewStyle.Plain)
+        let tableView = UITableView(frame: CGRect.zero,
+            style: UITableViewStyle.plain)
 
-        tableView.registerClass(UITableViewCell.self,
+        tableView.register(UITableViewCell.self,
             forCellReuseIdentifier: "ItemRenderer")
         
         return tableView
@@ -54,19 +54,19 @@ extension KernelsTableView: UITableViewDataSource
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         return model.kernels.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        let cell = tableView.dequeueReusableCellWithIdentifier("ItemRenderer",
-            forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemRenderer",
+                                                 for: indexPath)
      
         cell.textLabel?.text = model.kernels[indexPath.row].name
         cell.textLabel?.numberOfLines = 2
-        cell.textLabel?.textAlignment = .Center
+        cell.textLabel?.textAlignment = .center
         
         return cell
     }
@@ -74,10 +74,10 @@ extension KernelsTableView: UITableViewDataSource
 
 extension KernelsTableView: UITableViewDelegate
 {
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath)
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
         weights = model.kernels[indexPath.row].weights
 
-        sendActionsForControlEvents(.ValueChanged)
+        sendActions(for: .valueChanged)
     }
 }

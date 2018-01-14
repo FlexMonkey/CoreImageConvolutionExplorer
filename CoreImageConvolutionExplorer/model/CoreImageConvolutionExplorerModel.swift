@@ -224,5 +224,5 @@ struct CoreImageConvolutionExplorerModel
             -10, -5, -2, -1, -2, -5, -10
             ])
         
-        ].sort({$0.name < $1.name})
+        ].sorted(by: {$0.name < $1.name})
 }
