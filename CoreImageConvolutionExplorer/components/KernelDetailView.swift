@@ -14,8 +14,8 @@ class KernelDetailView: UIView
     {
         let label = UILabel()
         
-        label.font = UIFont.boldSystemFontOfSize(20)
-        label.textAlignment = .Center
+        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.textAlignment = .center
         label.text = "Select Kernel";
         
         return label
@@ -29,11 +29,11 @@ class KernelDetailView: UIView
         {
             let label = UILabel()
             
-            label.backgroundColor = .darkGrayColor()
-            label.textColor = .whiteColor()
-            label.textAlignment = .Center
+            label.backgroundColor = .darkGray
+            label.textColor = .white
+            label.textAlignment = .center
             label.adjustsFontSizeToFitWidth = true
-            label.font = UIFont.boldSystemFontOfSize(20)
+            label.font = UIFont.boldSystemFont(ofSize: 20)
             
             array.append(label)
         }
@@ -52,10 +52,10 @@ class KernelDetailView: UIView
             
             if let weights = weights
             {
-                let total = weights.reduce(0, combine: +)
+                let total = weights.reduce(0, +)
 
-                totalLabel.textColor = total == 0 ? UIColor.yellowColor() : total < 0 ? UIColor.redColor() : UIColor.blackColor()
-                totalLabel.backgroundColor = total == 0 ? UIColor.darkGrayColor() : UIColor.whiteColor()
+                totalLabel.textColor = total == 0 ? UIColor.yellow : total < 0 ? UIColor.red : UIColor.black
+                totalLabel.backgroundColor = total == 0 ? UIColor.darkGray : UIColor.white
                 totalLabel.text = "Σ \(total)"
             }
             else
@@ -93,7 +93,7 @@ class KernelDetailView: UIView
         
         var sourceIndex = 0
         
-        labels.enumerate().forEach
+        labels.enumerated().forEach
         {
             let x = $0 % 7
             let y = $0 / 7
@@ -131,7 +131,7 @@ class KernelDetailView: UIView
         let boxSide = Int(min(frame.width, frame.height) / 7)
         let boxesTop = (Int(max(frame.width, frame.height)) - (boxSide * 7)) / 2
 
-        labels.enumerate().forEach
+        labels.enumerated().forEach
         {
             let x = $0 % 7
             let y = $0 / 7
@@ -143,8 +143,8 @@ class KernelDetailView: UIView
         }
         
         totalLabel.frame = CGRect(x: 0, y:
-            frame.height - 10 - totalLabel.intrinsicContentSize().height,
+            frame.height - 10 - totalLabel.intrinsicContentSize.height,
             width: frame.width,
-            height: totalLabel.intrinsicContentSize().height)
+            height: totalLabel.intrinsicContentSize.height)
     }
 }

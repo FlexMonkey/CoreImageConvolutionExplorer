@@ -13,7 +13,7 @@ class ConvolutionImageViewer: UIView
 {
     let railroadImage = CIImage(image: UIImage(named: "railroad.jpg")!)!
     
-    let makeOpaqueKernel = CIColorKernel(string: "kernel vec4 makeOpaque(__sample pixel) { return vec4(pixel.rgb, 1.0); }")
+    let makeOpaqueKernel = CIColorKernel(source: "kernel vec4 makeOpaque(__sample pixel) { return vec4(pixel.rgb, 1.0); }")
     
     let imageView = OpenGLImageView()
     
@@ -39,16 +39,16 @@ class ConvolutionImageViewer: UIView
         imageView.image = railroadImage
         
         biasSlider.addTarget(self,
-            action: #selector(ConvolutionImageViewer.applyConvolutionKernel),
-            forControlEvents: .ValueChanged)
+                             action: #selector(ConvolutionImageViewer.applyConvolutionKernel),
+                             for: .valueChanged)
         
         normaliseButton.addTarget(self,
-            action: #selector(ConvolutionImageViewer.applyConvolutionKernel),
-            forControlEvents: .ValueChanged)
+                                  action: #selector(ConvolutionImageViewer.applyConvolutionKernel),
+                                  for: .valueChanged)
         
         premultiplyButton.addTarget(self,
-            action: #selector(ConvolutionImageViewer.applyConvolutionKernel),
-            forControlEvents: .ValueChanged)
+                                    action: #selector(ConvolutionImageViewer.applyConvolutionKernel),
+                                    for: .valueChanged)
     }
 
     required init?(coder aDecoder: NSCoder)
@@ -82,8 +82,8 @@ class ConvolutionImageViewer: UIView
     {
         didSet
         {
-            biasSlider.enabled = enabled
-            normaliseButton.enabled = enabled
+            biasSlider.isEnabled = enabled
+            normaliseButton.isEnabled = enabled
             alpha = enabled ? 1 : 0.5
         }
     }
@@ -100,16 +100,16 @@ class ConvolutionImageViewer: UIView
             return weights
         }
         
-        let sum = weights.reduce(0, combine: +)
+        let sum = weights.reduce(0, +)
         
         return sum == 0 ?
             weights :
             weights.map({ $0 / sum })
     }
     
-    func applyConvolutionKernel()
+    @objc func applyConvolutionKernel()
     {
-        guard let weights = normaliseWeightsArray(weights, normalise: normaliseButton.on) else
+        guard let weights = normaliseWeightsArray(weights: weights, normalise: normaliseButton.on) else
         {
             return
         }
@@ -128,10 +128,10 @@ class ConvolutionImageViewer: UIView
         
         let weightsVector: CIVector = CIVector(values: weights, count: weights.count)
         
-        let finalImage = railroadImage.imageByApplyingFilter(filterName,
-            withInputParameters: [
+        let finalImage = railroadImage.applyingFilter(filterName,
+                                                      parameters: [
                 kCIInputWeightsKey: weightsVector,
-                kCIInputBiasKey: CGFloat(biasSlider.value)]).imageByCroppingToRect(railroadImage.extent)
+                kCIInputBiasKey: CGFloat(biasSlider.value)]).cropped(to: railroadImage.extent)
         
         // Two seperate approaches to make opaque to mirror
         // book content. The CIColorMatrix technique could
@@ -141,14 +141,14 @@ class ConvolutionImageViewer: UIView
         // 'return vec4(unpremultiply(pixel).rgb, 1.0)'
         if premultiplyButton.on
         {
-            imageView.image = makeOpaqueKernel?.applyWithExtent(railroadImage.extent,
+            imageView.image = makeOpaqueKernel?.apply(extent: railroadImage.extent,
                 arguments: [finalImage])
         }
         else
         {
             imageView.image = finalImage
-                .imageByApplyingFilter("CIColorMatrix", withInputParameters: [ "inputBiasVector": CIVector(x: 0, y: 0, z: 0, w: 1)])
-            .imageByCroppingToRect(finalImage.extent)
+                .applyingFilter("CIColorMatrix", parameters: [ "inputBiasVector": CIVector(x: 0, y: 0, z: 0, w: 1)])
+                .cropped(to: finalImage.extent)
         }
     }
     
@@ -157,22 +157,22 @@ class ConvolutionImageViewer: UIView
         imageView.frame = bounds
         imageView.setNeedsDisplay()
         
-        let buttonY = frame.height - biasSlider.intrinsicContentSize().height - normaliseButton.intrinsicContentSize().height - 20
+        let buttonY = frame.height - biasSlider.intrinsicContentSize.height - normaliseButton.intrinsicContentSize.height - 20
         
         normaliseButton.frame = CGRect(x: 0,
             y: buttonY,
             width: frame.width / 2 - 5,
-            height: normaliseButton.intrinsicContentSize().height)
+            height: normaliseButton.intrinsicContentSize.height)
 
         premultiplyButton.frame = CGRect(x: frame.width / 2 + 5,
             y: buttonY,
             width: frame.width / 2 - 5,
-            height: normaliseButton.intrinsicContentSize().height)
+            height: normaliseButton.intrinsicContentSize.height)
         
         biasSlider.frame = CGRect(x: 0,
-            y: frame.height - biasSlider.intrinsicContentSize().height - 10,
+            y: frame.height - biasSlider.intrinsicContentSize.height - 10,
             width: frame.width,
-            height: biasSlider.intrinsicContentSize().height)
+            height: biasSlider.intrinsicContentSize.height)
     }
 }
 
@@ -182,17 +182,17 @@ class ConvolutionImageViewer: UIView
 
 class LabelledControl: UIControl
 {
-    let label = UILabel(frame: CGRectZero)
+    let label = UILabel(frame: CGRect.zero)
     let title: String
     
     init(title: String)
     {
         self.title = title
 
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
 
         layer.cornerRadius = 5
-        layer.borderColor = UIColor.lightGrayColor().CGColor
+        layer.borderColor = UIColor.lightGray.cgColor
         layer.borderWidth = 1
 
         addSubview(label)
@@ -229,11 +229,11 @@ class LabelledSwitch: LabelledControl
     {
         super.init(title: title)
         
-        onOffSwitch.on = on
+        onOffSwitch.isOn = on
         
         onOffSwitch.addTarget(self,
-            action: #selector(LabelledSwitch.switchChangeHandler),
-            forControlEvents: .ValueChanged)
+                              action: #selector(LabelledSwitch.switchChangeHandler),
+                              for: .valueChanged)
         
         addSubview(onOffSwitch)
     }
@@ -247,25 +247,24 @@ class LabelledSwitch: LabelledControl
     {
         set
         {
-            onOffSwitch.on = on
+            onOffSwitch.isOn = on
         }
         get
         {
-            return onOffSwitch.on
+            return onOffSwitch.isOn
         }
     }
     
-    func switchChangeHandler()
+    @objc func switchChangeHandler()
     {
-        on = onOffSwitch.on
+        on = onOffSwitch.isOn
         
-        sendActionsForControlEvents(.ValueChanged)
+        sendActions(for: .valueChanged)
     }
 
-    override func intrinsicContentSize() -> CGSize
-    {
-        return CGSize(width: label.intrinsicContentSize().width + onOffSwitch.intrinsicContentSize().width + 10,
-            height: max(label.intrinsicContentSize().height, onOffSwitch.intrinsicContentSize().height) + 10)
+    override var intrinsicContentSize: CGSize {
+        return CGSize(width: label.intrinsicContentSize.width + onOffSwitch.intrinsicContentSize.width + 10,
+                      height: max(label.intrinsicContentSize.height, onOffSwitch.intrinsicContentSize.height) + 10)
     }
     
     override func layoutSubviews()
@@ -275,7 +274,7 @@ class LabelledSwitch: LabelledControl
             width: frame.midX,
             height: frame.height).insetBy(dx: 5, dy: 5)
         
-        onOffSwitch.frame = CGRect(x: frame.width - onOffSwitch.intrinsicContentSize().width - 10,
+        onOffSwitch.frame = CGRect(x: frame.width - onOffSwitch.intrinsicContentSize.width - 10,
             y: 0,
             width: frame.width / 2,
             height: frame.height).insetBy(dx: 5, dy: 5)
@@ -286,7 +285,7 @@ class LabelledSwitch: LabelledControl
 
 class LabelledSlider: LabelledControl
 {
-    private let slider = UISlider(frame: CGRectZero)
+    private let slider = UISlider(frame: CGRect.zero)
     
     required init(title: String, minimumValue: Float = 0, maximumValue: Float = 1)
     {
@@ -296,8 +295,8 @@ class LabelledSlider: LabelledControl
         slider.maximumValue = maximumValue
         
         slider.addTarget(self,
-            action: #selector(LabelledSlider.sliderChangeHandler),
-            forControlEvents: .ValueChanged)
+                         action: #selector(LabelledSlider.sliderChangeHandler),
+                         for: .valueChanged)
 
         addSubview(slider)
     }
@@ -316,11 +315,11 @@ class LabelledSlider: LabelledControl
         }
     }
 
-    func sliderChangeHandler()
+    @objc func sliderChangeHandler()
     {
         value = slider.value
         
-        sendActionsForControlEvents(.ValueChanged)
+        sendActions(for: .valueChanged)
     }
     
     override func updateLabel()
@@ -328,10 +327,9 @@ class LabelledSlider: LabelledControl
         label.text = title + ": " + (NSString(format: "%.3f", Float(value)) as String)
     }
     
-    override func intrinsicContentSize() -> CGSize
-    {
+    override var intrinsicContentSize: CGSize {
         return CGSize(width: 100,
-            height: label.intrinsicContentSize().height + slider.intrinsicContentSize().height + 10)
+                      height: label.intrinsicContentSize.height + slider.intrinsicContentSize.height + 10)
     }
     
     override func layoutSubviews()
@@ -354,21 +352,22 @@ class LabelledSlider: LabelledControl
 
 class OpenGLImageView: GLKView
 {
-    let eaglContext = EAGLContext(API: .OpenGLES2)
+    let eaglContext = EAGLContext(api: .openGLES2)
     
     lazy var ciContext: CIContext =
     {
         [unowned self] in
         
-        return CIContext(EAGLContext: self.eaglContext,
-            options: [kCIContextWorkingColorSpace: NSNull()])
+//        return CIContext(EAGLContext: self.eaglContext!,
+//            options: [kCIContextWorkingColorSpace: NSNull()])
+        return CIContext(eaglContext: self.eaglContext!, options: [kCIContextWorkingColorSpace: NSNull()])
     }()
     
     override init(frame: CGRect)
     {
-        super.init(frame: frame, context: eaglContext)
+        super.init(frame: frame, context: eaglContext!)
     
-        context = self.eaglContext
+        context = self.eaglContext!
         delegate = self
     }
 
@@ -394,7 +393,7 @@ class OpenGLImageView: GLKView
 
 extension OpenGLImageView: GLKViewDelegate
 {
-    func glkView(view: GLKView, drawInRect rect: CGRect)
+    func glkView(_ view: GLKView, drawIn rect: CGRect)
     {
         guard let image = image else
         {
@@ -402,32 +401,32 @@ extension OpenGLImageView: GLKViewDelegate
         }
    
         let targetRect = image.extent.aspectFitInRect(
-            target: CGRect(origin: CGPointZero,
+            target: CGRect(origin: CGPoint.zero,
                 size: CGSize(width: drawableWidth,
                     height: drawableHeight)))
         
         let ciBackgroundColor = CIColor(
-            color: backgroundColor ?? UIColor.whiteColor())
+            color: backgroundColor ?? UIColor.white)
         
-        ciContext.drawImage(CIImage(color: ciBackgroundColor),
-            inRect: CGRect(x: 0,
-                y: 0,
-                width: drawableWidth,
-                height: drawableHeight),
-            fromRect: CGRect(x: 0,
-                y: 0,
-                width: drawableWidth,
-                height: drawableHeight))
+        ciContext.draw(CIImage(color: ciBackgroundColor),
+                       in: CGRect(x: 0,
+                                  y: 0,
+                                  width: drawableWidth,
+                                  height: drawableHeight),
+                       from: CGRect(x: 0,
+                                    y: 0,
+                                    width: drawableWidth,
+                                    height: drawableHeight))
         
-        ciContext.drawImage(image,
-            inRect: targetRect,
-            fromRect: image.extent)
+        ciContext.draw(image,
+                       in: targetRect,
+                       from: image.extent)
     }
 }
 
 extension CGRect
 {
-    func aspectFitInRect(target target: CGRect) -> CGRect
+    func aspectFitInRect(target: CGRect) -> CGRect
     {
         let scale: CGFloat =
         {
